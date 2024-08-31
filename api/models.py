@@ -14,7 +14,7 @@ class Subject(models.Model):
     
 class Exam(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    subjects = models.ManyToManyField('Subject', related_name='exams_subject')
+    subjects = models.ManyToManyField('Subject')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True) 
@@ -25,7 +25,7 @@ class Exam(models.Model):
 class Chapter(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = MarkdownxField(blank=True)
-    subjects = models.ManyToManyField(Subject, related_name='chapters_subject')
+    subjects = models.ManyToManyField(Subject)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True) 
@@ -46,7 +46,7 @@ class Topic(models.Model):
 
 class StudyMaterial(models.Model):
     statement = MarkdownxField(null=False, blank=False)
-    topic = models.ManyToManyField(Topic, related_name='study_materials')
+    topic = models.ManyToManyField(Topic)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -63,10 +63,10 @@ class Year(models.Model):
 
 class Question(models.Model):
     statement = MarkdownxField(null=False, blank=False)
-    years = models.ManyToManyField(Year, related_name='questions_years')
-    chapter = models.ManyToManyField(Chapter, related_name='questions_chapters')
-    subject = models.ManyToManyField(Subject, related_name='questions_subjects')
-    topic = models.ManyToManyField(Topic, related_name='questions_topics')
+    years = models.ManyToManyField(Year)
+    chapter = models.ManyToManyField(Chapter)
+    subject = models.ManyToManyField(Subject)
+    topic = models.ManyToManyField(Topic)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True) 
@@ -77,7 +77,7 @@ class Question(models.Model):
 
 class Option(models.Model):
     statement = MarkdownxField(null=False, blank=False)
-    question = models.ForeignKey(Question, related_name='options_question', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
     is_correct = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -87,7 +87,7 @@ class Option(models.Model):
 
 class Solution(models.Model):
     statement = MarkdownxField(null=False, blank=False)
-    question = models.OneToOneField(Question, related_name='solution_question', on_delete=models.CASCADE)
+    question = models.OneToOneField(Question, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -96,7 +96,7 @@ class Solution(models.Model):
 
 class DailyQuestion(models.Model):
     date = models.DateField(unique=True)
-    question = models.ForeignKey(Question, related_name='daily_questions', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -107,8 +107,8 @@ class DailyQuestion(models.Model):
 
 class Attempt(models.Model):
     user = models.UUIDField(editable=False)
-    questions = models.ManyToManyField(Question, related_name='attempts_questions')
-    options = models.ManyToManyField(Option, related_name='attempts_options')
+    questions = models.ManyToManyField(Question)
+    options = models.ManyToManyField(Option)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
