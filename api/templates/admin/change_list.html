@@ -1,0 +1,36 @@
+{% extends "admin/change_list.html" %} {% block content %} {{ block.super }}
+
+<style>
+  .results tr {
+    cursor: pointer;
+  }
+  .results tr:hover {
+    background-color: #f5f5f5;
+  }
+  .results td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  #filter-toggle-btn {
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+
+  #filter-section {
+    margin-bottom: 20px;
+  }
+</style>
+
+<script type="text/javascript">
+  (function ($) {
+    $(document).ready(function () {
+      $(".results tr").on("click", function () {
+        window.location = $(this).find("a:first").attr("href");
+      });
+
+      $("#filter-section").collapse("hide");
+    });
+  })(django.jQuery);
+</script>
+{% endblock %}

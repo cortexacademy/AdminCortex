@@ -2,7 +2,7 @@ from django.db import models
 from markdownx.models import MarkdownxField
 
 class Subject(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     description = MarkdownxField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -13,9 +13,9 @@ class Subject(models.Model):
     
     
 class Exam(models.Model):
-    name = models.CharField(max_length=255)
-    subjects = models.ManyToManyField('Subject', related_name='exams')
-    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+    name = models.CharField(max_length=255, unique=True)
+    subjects = models.ManyToManyField('Subject')
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True) 
 
@@ -23,9 +23,9 @@ class Exam(models.Model):
         return self.name
 
 class Chapter(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     description = MarkdownxField(blank=True)
-    subjects = models.ManyToManyField(Subject, related_name='chapters')
+    subjects = models.ManyToManyField(Subject)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True) 
@@ -35,7 +35,7 @@ class Chapter(models.Model):
 
 
 class Topic(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True) 
@@ -45,12 +45,13 @@ class Topic(models.Model):
 
 
 class StudyMaterial(models.Model):
-    topic = models.ManyToManyField(Topic, related_name='study_materials')
+    statement = MarkdownxField(null=False, blank=False)
+    topic = models.ManyToManyField(Topic)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.topic.name} - {self.reference.statement[:50]}"
+        return f"studymaterial id: {self.id}"
 
 
 class Year(models.Model):
@@ -61,44 +62,55 @@ class Year(models.Model):
 
 
 class Question(models.Model):
-    statement = MarkdownxField()
-    years = models.ManyToManyField(Year, related_name='questions')
-    chapter = models.ManyToManyField(Chapter, related_name='questions')
-    subject = models.ManyToManyField(Subject, related_name='questions')
-    topic = models.ManyToManyField(Topic, related_name='questions')
+    statement = MarkdownxField(null=False, blank=False)
+    years = models.ManyToManyField(Year)
+    chapter = models.ManyToManyField(Chapter)
+    subject = models.ManyToManyField(Subject)
+    topic = models.ManyToManyField(Topic)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True) 
 
     def __str__(self):
-        return f"Q{self.id}: {self.statement[:50]}"
+        return  f"Question id: {self.id}"
 
 
 class Option(models.Model):
-    question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
-    statement = MarkdownxField()
+    statement = MarkdownxField(null=False, blank=False)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
     is_correct = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.statement[:50]
+        return  f"Option id: {self.id}"
 
 class Solution(models.Model):
-    question = models.OneToOneField(Question, related_name='solution', on_delete=models.CASCADE)
-    statement = MarkdownxField()
+    statement = MarkdownxField(null=False, blank=False)
+    question = models.OneToOneField(Question, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.statement[:50]
+
+class DailyQuestion(models.Model):
+    date = models.DateField(unique=True)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Daily Question for {self.date}"
+
 
 class Attempt(models.Model):
     user = models.UUIDField(editable=False)
-    questions = models.ManyToManyField(Question, related_name='attempts')
-    options = models.ManyToManyField(Option, related_name='attempts')
+    questions = models.ManyToManyField(Question)
+    options = models.ManyToManyField(Option)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"User {self.user} - Q{self.question.id} - {self.option.statement[:50]}"
+        return f"User {self.user} - Q{self.question.id}"
