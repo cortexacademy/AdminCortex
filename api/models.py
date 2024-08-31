@@ -2,7 +2,7 @@ from django.db import models
 from markdownx.models import MarkdownxField
 
 class Subject(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     description = MarkdownxField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -13,9 +13,9 @@ class Subject(models.Model):
     
     
 class Exam(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     subjects = models.ManyToManyField('Subject', related_name='exams')
-    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True) 
 
@@ -23,7 +23,7 @@ class Exam(models.Model):
         return self.name
 
 class Chapter(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     description = MarkdownxField(blank=True)
     subjects = models.ManyToManyField(Subject, related_name='chapters')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -35,7 +35,7 @@ class Chapter(models.Model):
 
 
 class Topic(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True) 
@@ -45,12 +45,13 @@ class Topic(models.Model):
 
 
 class StudyMaterial(models.Model):
+    statement = MarkdownxField(null=False, blank=False)
     topic = models.ManyToManyField(Topic, related_name='study_materials')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.topic.name} - {self.reference.statement[:50]}"
+        return self.topic.name
 
 
 class Year(models.Model):
@@ -61,7 +62,7 @@ class Year(models.Model):
 
 
 class Question(models.Model):
-    statement = MarkdownxField()
+    statement = MarkdownxField(null=False, blank=False)
     years = models.ManyToManyField(Year, related_name='questions')
     chapter = models.ManyToManyField(Chapter, related_name='questions')
     subject = models.ManyToManyField(Subject, related_name='questions')
@@ -71,27 +72,38 @@ class Question(models.Model):
     is_active = models.BooleanField(default=True) 
 
     def __str__(self):
-        return f"Q{self.id}: {self.statement[:50]}"
+        return self.id
 
 
 class Option(models.Model):
+    statement = MarkdownxField(null=False, blank=False)
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
-    statement = MarkdownxField()
     is_correct = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.statement[:50]
+        return self.id
 
 class Solution(models.Model):
+    statement = MarkdownxField(null=False, blank=False)
     question = models.OneToOneField(Question, related_name='solution', on_delete=models.CASCADE)
-    statement = MarkdownxField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.statement[:50]
+
+class DailyQuestion(models.Model):
+    date = models.DateField(unique=True)
+    question = models.ForeignKey(Question, related_name='daily_questions', on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Daily Question for {self.date}"
+
 
 class Attempt(models.Model):
     user = models.UUIDField(editable=False)
@@ -101,4 +113,4 @@ class Attempt(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"User {self.user} - Q{self.question.id} - {self.option.statement[:50]}"
+        return f"User {self.user} - Q{self.question.id}"
