@@ -5,6 +5,9 @@ from markdownx.admin import MarkdownxModelAdmin
 from markdownx.widgets import AdminMarkdownxWidget
 from django.utils.html import format_html
 from django.contrib.admin import RelatedOnlyFieldListFilter
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class MyModelAdmin(admin.ModelAdmin):
     formfield_overrides = {
@@ -91,3 +94,4 @@ admin.site.register(Attempt,MyModelAdmin)
 admin.site.register(DailyQuestion,MyModelAdmin)
 admin.site.register(Year,MyModelAdmin)
 admin.site.register(Question, QuestionAdmin)
+admin.site.register(User)

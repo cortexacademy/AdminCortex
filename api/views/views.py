@@ -22,7 +22,7 @@ def index1(request, id):
 def custom_view(request, id):
     subject = Subject.objects.get(pk=id)
 
-    questions = subject.questions.all()
+    questions = subject.question_set.all()
     questions_data = json.loads(serializers.serialize("json", questions))  # Get the first item from the list
 
     return JsonResponse(questions_data, safe=False)
