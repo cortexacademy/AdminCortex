@@ -18,7 +18,7 @@ User = get_user_model()
 
 
 @csrf_exempt
-def createTempUser(request):
+def createUser(request):
     body = json.loads(request.body)
 
     new_user = User.objects.create_user(
@@ -37,7 +37,7 @@ def createTempUser(request):
     )
 
 
-def login_user(request):
+def loginUser(request):
     user = json.loads(request.body)
 
     if user.get("email") is None:
@@ -58,7 +58,7 @@ def login_user(request):
     return JsonResponse({"message": "Login Successfull", "body": user_data}, status=200)
 
 
-def test_login(request):
+def testLogin(request):
     if request.user.is_authenticated:
         return JsonResponse(
             {"message": "Login Successfull", "body": "user_data"}, status=200
@@ -70,10 +70,10 @@ def test_login(request):
 
 
 @login_required(login_url="/api/auth/invalid_login/")
-def logout_user(request):
+def logoutUser(request):
     auth_logout(request)
     return JsonResponse({"message": "Logout Successfull"}, status=200)
 
 
-def invalid_login(request):
+def invalidLogin(request):
     return JsonResponse({"message": "Unauthorized Request"}, status=400)
