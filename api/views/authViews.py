@@ -45,20 +45,20 @@ def loginUser(request):
     if user.get("password") is None:
         return error_json("400", "Password is required")
 
-    userAuth = authenticate(
+    authenticatedUser = authenticate(
         username=user.get("email", ""), password=user.get("password", "")
     )
 
-    if userAuth is None:
+    if authenticatedUser is None:
         return error_json("401", "Invalid credentials")
 
-    auth_login(request, userAuth)
-    user_data = json.loads(serializers.serialize("json", [userAuth]))[0]
+    auth_login(request, authenticatedUser)
+    user_data = json.loads(serializers.serialize("json", [authenticatedUser]))[0]
 
     return JsonResponse({"message": "Login Successfull", "body": user_data}, status=200)
 
 
-def testLogin(request):
+def validateLogin(request):
     if request.user.is_authenticated:
         return JsonResponse(
             {"message": "Login Successfull", "body": "user_data"}, status=200
