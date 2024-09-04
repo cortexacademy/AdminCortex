@@ -1,2 +1,2 @@
-from . import views
+from . import subjectViews
 from . import authViews

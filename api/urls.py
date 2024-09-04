@@ -1,11 +1,10 @@
-from django.urls import path
+from django.urls import path, include
+from api.errors import error_json
+from .views import subjectViews, authViews
 
-from .views import views, authViews
 
 urlpatterns = [
-    path("auth/createUser/",authViews.createTempUser,name="createTempUser"),
-    path("auth/login/",authViews.login,name="login"),
-    path("", views.index, name="index"),
-    path("subject/<int:id>/", views.index1, name="index1"),     
-    path('subject/<int:id>/questions/', views.custom_view, name="custom_view"),
-]   
+    path("", subjectViews.index, name="index"),
+    path("auth/", include("api.routes.auth")),
+    path("subject/", include("api.routes.subject")),
+]
