@@ -2,7 +2,7 @@ from django.db import models
 from markdownx.models import MarkdownxField
 from django.contrib.auth.models import AbstractUser
 from .manager import UserManager
-
+from .utils import custom_upload_to
 
 class UserProfile(AbstractUser):
     username = None
@@ -14,7 +14,20 @@ class UserProfile(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+class Image(models.Model):
+    name = models.CharField(max_length=255)
+    image = models.ImageField(upload_to=custom_upload_to)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
+
+    @property
+    def image_url(self):
+        if self.image and hasattr(self.image, 'url'):
+            return self.image.url
+        return None
 
 class Subject(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -24,9 +37,9 @@ class Subject(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name
-
-
+        return f"{self.id} {self.name}"
+    
+    
 class Exam(models.Model):
     name = models.CharField(max_length=255, unique=True)
     subjects = models.ManyToManyField("Subject")
@@ -37,7 +50,6 @@ class Exam(models.Model):
     def __str__(self):
         return self.name
 
-
 class Chapter(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = MarkdownxField(blank=True)
@@ -47,7 +59,7 @@ class Chapter(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.id} {self.name}"
 
 
 class Topic(models.Model):
@@ -57,7 +69,7 @@ class Topic(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.id} {self.name}"
 
 
 class StudyMaterial(models.Model):

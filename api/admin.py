@@ -12,6 +12,7 @@ from .models import (
     Solution,
     Attempt,
     DailyQuestion,
+    Image
 )
 from markdownx.admin import MarkdownxModelAdmin
 from markdownx.widgets import AdminMarkdownxWidget
@@ -29,7 +30,7 @@ class MyModelAdmin(admin.ModelAdmin):
     }
 
     def __init__(self, model, admin_site):
-        all_fields = [field.name for field in model._meta.fields if field.name != "id"]
+        all_fields = [field.name for field in model._meta.fields]
         self.list_display = [self.truncate_field(field) for field in all_fields]
         self.search_fields = [
             field.name
@@ -110,12 +111,26 @@ class StudyMaterialAdmin(MyModelAdmin):
         ] + self.list_filter
 
 
+
+class ImageAdmin(admin.ModelAdmin):
+    list_display = ('name', 'uploaded_at', 'image_preview')
+    readonly_fields = ('image_preview',)
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-height: 200px; max-width: 200px;" />', obj.image.url)
+        return "No Image"
+
+    image_preview.short_description = 'Image Preview'
+
+
 admin.site.register(Subject, MyModelAdmin)
 admin.site.register(Chapter, ChaptersAdmin)
 admin.site.register(Exam, ExamAdmin)
 admin.site.register(Topic, MyModelAdmin)
 admin.site.register(StudyMaterial, StudyMaterialAdmin)
 admin.site.register(Attempt, MyModelAdmin)
+admin.site.register(Image,ImageAdmin)
 admin.site.register(DailyQuestion, MyModelAdmin)
 admin.site.register(Year, MyModelAdmin)
 admin.site.register(Question, QuestionAdmin)
