@@ -1,9 +1,9 @@
 from django.urls import path
-from api.errors import error_json
-from ..views import subjectViews
-
+from ..views.subjectViews import *
 
 urlpatterns = [
-    path("<int:id>/", subjectViews.index1, name="index1"),
-    path("<int:id>/questions/", subjectViews.custom_view, name="custom_view"),
+    path('', SubjectListView.as_view(), name='subject-list'),
+    path('<int:id>/', SubjectDetailView.as_view(), name='subject-detail'),
+    path('<int:subject_id>/years/', YearsBySubjectView.as_view(), name='filtered-years'),
+    path('<int:subject_id>/year/<int:year_id>/topics/', TopicsBySubjectAndYearView.as_view(), name='filtered-topics'),
 ]

@@ -12,17 +12,15 @@ from .models import (
     Solution,
     Attempt,
     DailyQuestion,
-    Image
+    Image,
+    UserProfile
 )
 from markdownx.admin import MarkdownxModelAdmin
 from markdownx.widgets import AdminMarkdownxWidget
 from django.utils.html import format_html
 from django.contrib.admin import RelatedOnlyFieldListFilter
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-
-User = get_user_model()
-
+from .forms import QuestionAdminForm
 
 class MyModelAdmin(admin.ModelAdmin):
     formfield_overrides = {
@@ -76,7 +74,10 @@ class SolutionInline(admin.TabularInline):
 
 class QuestionAdmin(MyModelAdmin):
     inlines = [OptionInline, SolutionInline]
-
+    # form = QuestionAdminForm
+    # list_display = [
+    #     'id', 'subject', 'chapter', 'topic', 'has_options', 'has_correct_option', 'solution_summary'
+    # ]
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_filter = [
@@ -110,19 +111,28 @@ class StudyMaterialAdmin(MyModelAdmin):
             ("topic", RelatedOnlyFieldListFilter),
         ] + self.list_filter
 
-
-
 class ImageAdmin(admin.ModelAdmin):
-    list_display = ('name', 'uploaded_at', 'image_preview')
-    readonly_fields = ('image_preview',)
+    list_display = ('name', 'uploaded_at', 'image_preview', 'copy_url_link')
+    readonly_fields = ('image_preview', 'copy_url_link')
 
     def image_preview(self, obj):
         if obj.image:
-            return format_html('<img src="{}" style="max-height: 200px; max-width: 200px;" />', obj.image.url)
+            return format_html(
+                '<img src="{}" style="max-height: 200px; max-width: 200px;" />',
+                obj.image.url, obj.image.url
+            )
         return "No Image"
 
     image_preview.short_description = 'Image Preview'
 
+    def copy_url_link(self, obj):
+        if obj.image:
+            return format_html('<a href="#" onclick="copyUrl(\'{}\')">Copy URL</a>', obj.image.url)
+        return ""
+
+    copy_url_link.short_description = 'Copy URL'
+  
+  
 
 admin.site.register(Subject, MyModelAdmin)
 admin.site.register(Chapter, ChaptersAdmin)
@@ -134,5 +144,5 @@ admin.site.register(Image,ImageAdmin)
 admin.site.register(DailyQuestion, MyModelAdmin)
 admin.site.register(Year, MyModelAdmin)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(User)
+admin.site.register(UserProfile, MyModelAdmin)
 admin.site.register(Permission)

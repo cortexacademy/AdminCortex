@@ -1,0 +1,19 @@
+{% extends "admin/change_form.html" %} {% block content %} {{ block.super }}
+
+<script type="text/javascript">
+  (function ($) {
+    $(document).ready(function () {
+      // Copy URL function
+      window.copyUrl = function (url) {
+        const tempInput = document.createElement("input");
+        document.body.appendChild(tempInput);
+        tempInput.value = url;
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        alert("URL copied to clipboard!");
+      };
+    });
+  })(django.jQuery);
+</script>
+{% endblock %}

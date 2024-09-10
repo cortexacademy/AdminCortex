@@ -23,7 +23,7 @@ def expires_in(token):
 
 
 # token checker if token expired or not
-def is_token_expired(token):
+def is_token_expired(token) -> bool:
     return expires_in(token) < timedelta(seconds=0)
 
 
@@ -31,8 +31,20 @@ def is_token_expired(token):
 # If token is expired then it will be removed
 # and new one with different key will be created
 def token_expire_handler(token):
-    is_expired = is_token_expired(token)
-    if is_expired:
+    try:
+        is_expired = is_token_expired(token)
+        if is_expired:
+            token.delete()
+            token = Token.objects.create(user=token.user)
+        return token, is_expired
+    except Exception as e:
+        return token, True
+
+
+def refresh_token(token):
+    try:
         token.delete()
         token = Token.objects.create(user=token.user)
-    return token, is_expired
+        return token
+    except Exception as e:
+        return token

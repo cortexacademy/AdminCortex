@@ -20,6 +20,28 @@
   #filter-section {
     margin-bottom: 20px;
   }
+
+  .image-preview-link {
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: none;
+  }
+  .image-preview-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Dark Mode Styling */
+  @media (prefers-color-scheme: dark) {
+    .results tr:hover {
+      background-color: #333;
+    }
+    .results td {
+      border-bottom: 1px solid #444;
+    }
+    .image-preview-link {
+      color: #66b2ff;
+    }
+  }
 </style>
 
 <script type="text/javascript">
@@ -31,6 +53,16 @@
 
       $("#filter-section").collapse("hide");
     });
+
+    window.copyUrl = function (url) {
+      const tempInput = document.createElement("input");
+      document.body.appendChild(tempInput);
+      tempInput.value = url;
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+      alert("URL copied to clipboard!");
+    };
   })(django.jQuery);
 </script>
 {% endblock %}

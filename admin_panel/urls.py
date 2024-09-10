@@ -24,5 +24,4 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("markdownx/", include(markdownx)),
-    # path("api-auth/", include("rest_framework.urls")),
 ] + debug_toolbar_urls()

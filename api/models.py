@@ -3,6 +3,7 @@ from markdownx.models import MarkdownxField
 from django.contrib.auth.models import AbstractUser
 from .manager import UserManager
 from .utils import custom_upload_to
+from django.core.exceptions import ValidationError
 
 class UserProfile(AbstractUser):
     username = None
@@ -105,7 +106,7 @@ class Question(models.Model):
 
 class Option(models.Model):
     statement = MarkdownxField(null=False, blank=False)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
     is_correct = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -116,7 +117,7 @@ class Option(models.Model):
 
 class Solution(models.Model):
     statement = MarkdownxField(null=False, blank=False)
-    question = models.OneToOneField(Question, on_delete=models.CASCADE)
+    question = models.OneToOneField(Question, on_delete=models.CASCADE, related_name='solution')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -127,7 +128,6 @@ class Solution(models.Model):
 class DailyQuestion(models.Model):
     date = models.DateField(unique=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -136,11 +136,12 @@ class DailyQuestion(models.Model):
 
 
 class Attempt(models.Model):
-    user = models.UUIDField(editable=False)
-    questions = models.ManyToManyField(Question)
-    options = models.ManyToManyField(Option)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE) 
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_option = models.ForeignKey(Option, on_delete=models.CASCADE)
+    is_correct = models.BooleanField(default=False) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"User {self.user} - Q{self.question.id}"
+        return f"User {self.user.email} - Q{self.question.id} - Option {self.selected_option.id}"

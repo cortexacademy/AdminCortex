@@ -1,8 +1,6 @@
 import json
-from django.http import Http404, HttpResponse
 from django.http import JsonResponse
-from ..models import Subject
-from ..utils import token_expire_handler
+from ..utils import refresh_token, token_expire_handler, is_token_expired
 from django.core import serializers
 from ..errors import error_json
 from django.contrib.auth import (
@@ -11,11 +9,9 @@ from django.contrib.auth import (
     login as auth_login,
     logout as auth_logout,
 )
-from rest_framework import status
+from rest_framework import status, exceptions
 
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -30,8 +26,27 @@ from rest_framework.authtoken import views
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from rest_framework.renderers import JSONRenderer
+from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
+
+
+class CustomTokenAuthentication(TokenAuthentication):
+    keyword = "Bearer"
+
+    def authenticate_credentials(self, key):
+        model = self.get_model()
+        try:
+            token = model.objects.select_related("user").get(key=key)
+        except model.DoesNotExist:
+            raise exceptions.AuthenticationFailed(_("Invalid token."))
+
+        if not token.user.is_active:
+            raise exceptions.AuthenticationFailed(_("User inactive or deleted."))
+
+        if is_token_expired(token):
+            raise exceptions.AuthenticationFailed(_("The Token is expired"))
+        return (token.user, token)
 
 
 class CreateUserView(APIView):
@@ -85,15 +100,17 @@ class CreateUserView(APIView):
 
 
 class ValidateLoginView(APIView):
-    authentication_classes = [TokenAuthentication, SessionAuthentication]
+    authentication_classes = [CustomTokenAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
+    def get(self, request: Request, format=None):
+        if request.auth is not None:
+            token = refresh_token(request.auth)
         content = {
             "user": json.loads(serializers.serialize("json", [request.user]))[
                 0
             ],  # `django.contrib.auth.User` instance.
-            "auth": str(request.auth),  # None
+            "auth": str(token),  # None
         }
         return Response(content)
 
