@@ -35,9 +35,6 @@ MARKDOWNX_MEDIA_PATH = "markdownx/"
 MARKDOWNX_UPLOAD_MAX_SIZE = 5242880  # 5MB
 MARKDOWNX_SERVER_CALL_LATENCY = 1000  # milliseconds
 
-INTERNAL_IPS = [
-    "127.0.0.1",
-]
 INSTALLED_APPS = [
     "api.apps.ApiConfig",
     "django.contrib.admin",
@@ -150,11 +147,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_REGION_NAME = "ap-south-1"
+AWS_S3_REGION_NAME =os.getenv("AWS_REGION_NAME", 'ap-south-1')
 AWS_S3_ADDRESSING_STYLE = "virtual"
 AWS_S3_CUSTOM_DOMAIN = (
     f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
 )
+
 # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 # AWS_S3_FILE_OVERWRITE = False
@@ -168,6 +166,25 @@ STORAGES = {
     },
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
+
+
+# Email backend using AWS SES
+EMAIL_BACKEND = 'django_ses.SESBackend'
+
+# AWS SES Credentials
+AWS_SES_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SES_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_SES_REGION_NAME = os.getenv("AWS_REGION_NAME", 'ap-south-1')
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+EMAIL_HOST = os.getenv("EMAIL_HOST", f'email.{AWS_SES_REGION_NAME}.amazonaws.com')
+AWS_SES_AUTO_THROTTLE = 0.5  # Throttle to avoid exceeding SES limits
+
+# Enable/disable email verification
+AWS_SES_VERIFY_SSL = True
+
+
+
 
 # token expire time 7 days
 TOKEN_EXPIRED_AFTER_SECONDS = 7 * 24 * 60 * 60

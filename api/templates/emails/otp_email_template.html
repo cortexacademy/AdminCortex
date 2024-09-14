@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTP Code</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #e9efec; /* Light outer background */
+        color: #16423c; /* Dark text color */
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 50px auto;
+        background-color: #16423c; /* Dark container background */
+        border: 1px solid #6a9c89; /* Border color */
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      h2 {
+        color: #e9efec; /* Light text color for header */
+        font-size: 28px;
+        text-align: center;
+      }
+
+      p {
+        color: #c4dad2; /* Light text color for paragraphs */
+        font-size: 16px;
+        text-align: center;
+      }
+
+      .otp-container {
+        margin: 30px 0;
+        background-color: #6a9c89; /* Medium color for OTP background */
+        padding: 15px;
+        border-radius: 10px;
+        color: #e9efec; /* Light text color */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        position: relative;
+      }
+
+      .otp-text {
+        font-weight: bold;
+        color: #e9efec; /* Light text color */
+        text-align: center;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #c4dad2; /* Light footer color */
+        text-align: center;
+      }
+
+      @media (max-width: 600px) {
+        .email-container {
+          width: 90%;
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <h2>Hello,</h2>
+      <p>Your One-Time Password (OTP) is:</p>
+
+      <div class="otp-container">
+        <span class="otp-text" id="otp">{{ otp }}</span>
+      </div>
+
+      <p>Please use this code to verify your account.</p>
+      <p>If you did not request this, please ignore this email.</p>
+      <p class="footer">Thank you!</p>
+    </div>
+  </body>
+</html>
