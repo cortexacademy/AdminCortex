@@ -58,7 +58,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 INTERNAL_IPS = [
@@ -147,7 +147,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_REGION_NAME =os.getenv("AWS_REGION_NAME", 'ap-south-1')
+AWS_S3_REGION_NAME = os.getenv("AWS_REGION_NAME", "ap-south-1")
 AWS_S3_ADDRESSING_STYLE = "virtual"
 AWS_S3_CUSTOM_DOMAIN = (
     f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
@@ -169,32 +169,32 @@ STORAGES = {
 
 
 # Email backend using AWS SES
-EMAIL_BACKEND = 'django_ses.SESBackend'
+EMAIL_BACKEND = "django_ses.SESBackend"
 
 # AWS SES Credentials
 AWS_SES_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SES_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_SES_REGION_NAME = os.getenv("AWS_REGION_NAME", 'ap-south-1')
+AWS_SES_REGION_NAME = os.getenv("AWS_REGION_NAME", "ap-south-1")
 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
-EMAIL_HOST = os.getenv("EMAIL_HOST", f'email.{AWS_SES_REGION_NAME}.amazonaws.com')
+EMAIL_HOST = os.getenv("EMAIL_HOST", f"email.{AWS_SES_REGION_NAME}.amazonaws.com")
 AWS_SES_AUTO_THROTTLE = 0.5  # Throttle to avoid exceeding SES limits
 
 # Enable/disable email verification
 AWS_SES_VERIFY_SSL = True
 
 
-
-
 # token expire time 7 days
-TOKEN_EXPIRED_AFTER_SECONDS = 7 * 24 * 60 * 60
-REST_FRAMEWORK = {
-#     # Use Django's standard `django.contrib.auth` permissions,
-#     # or allow read-only access for unauthenticated users.
-#     "DEFAULT_PERMISSION_CLASSES": [
-#         "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
-#     ],
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+TOKEN_EXPIRED_AFTER_SECONDS = 7 * 24 * 60 * 60  # 7 days
+EMAIL_TOKEN_VALIDITY = 60 * 60 * 24  # 24 hours
+OTP_VALIDITY = 60 * 15  # 15 minutes
 
+REST_FRAMEWORK = {
+    #     # Use Django's standard `django.contrib.auth` permissions,
+    #     # or allow read-only access for unauthenticated users.
+    #     "DEFAULT_PERMISSION_CLASSES": [
+    #         "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
+    #     ],
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 APPEND_SLASH = True
