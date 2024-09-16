@@ -23,6 +23,22 @@ class UserProfile(AbstractUser):
         return self.email
 
 
+class UserDetails(models.Model):
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+    address = models.TextField(null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+    country = models.CharField(max_length=255, null=True, blank=True)
+    pincode = models.CharField(max_length=8, null=True, blank=True)
+    college_name = models.CharField(max_length=500, null=True, blank=True)
+    batch_year = models.CharField(max_length=4, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.email
+
+
 class UserEmailAuth(models.Model):
     email = models.EmailField(unique=True, db_index=True)
     otp = models.CharField(max_length=6)
@@ -114,7 +130,7 @@ class Subject(models.Model):
 
 class Exam(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    subjects = models.ManyToManyField("Subject")
+    subjects = models.ManyToManyField(Subject)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -145,14 +161,14 @@ class Topic(models.Model):
         return f"{self.id} {self.name}"
 
 
-class StudyMaterial(models.Model):
-    statement = MarkdownxField(null=False, blank=False)
-    topic = models.ManyToManyField(Topic)
+class Tag(models.Model):
+    name = models.CharField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"studymaterial id: {self.id}"
+        return f"{self.id} {self.name}"
 
 
 class Year(models.Model):
@@ -162,12 +178,26 @@ class Year(models.Model):
         return self.year
 
 
+class StudyMaterial(models.Model):
+    statement = MarkdownxField(null=False, blank=False)
+    # topic = models.ManyToManyField(Topic)
+    year = models.ForeignKey(Year, null=True, on_delete=models.SET_NULL)
+    subject = models.ForeignKey(Subject, null=True, on_delete=models.SET_NULL)
+    exam = models.ForeignKey(Exam, null=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"studymaterial id: {self.id}"
+
+
 class Question(models.Model):
     statement = MarkdownxField(null=False, blank=False)
-    years = models.ManyToManyField(Year)
-    chapter = models.ManyToManyField(Chapter)
-    subject = models.ManyToManyField(Subject)
-    topic = models.ManyToManyField(Topic)
+    years = models.ManyToManyField(Year, blank=True)
+    chapter = models.ManyToManyField(Chapter, blank=True)
+    subject = models.ManyToManyField(Subject, blank=True)
+    topic = models.ManyToManyField(Topic, blank=True)
+    tag = models.ManyToManyField(Tag, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -214,10 +244,21 @@ class DailyQuestion(models.Model):
 class Attempt(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_option = models.ForeignKey(Option, on_delete=models.CASCADE)
-    is_correct = models.BooleanField(default=False)
+    selected_option = models.ManyToManyField(Option)
+    is_first = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"User {self.user.email} - Q{self.question.id} - Option {self.selected_option.id}"
+
+
+class Diamonds(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    statement = MarkdownxField(null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name

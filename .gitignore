@@ -9,4 +9,5 @@ media
 .vscode
 .env
 venv
+wenv
 db.json
