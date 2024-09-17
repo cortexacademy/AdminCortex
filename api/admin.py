@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db import models
 from .models import (
+    Diamond,
     Subject,
     Chapter,
     Exam,
@@ -13,7 +14,8 @@ from .models import (
     Attempt,
     DailyQuestion,
     Image,
-    UserProfile
+    UserProfile,
+    Tag,
 )
 from markdownx.admin import MarkdownxModelAdmin
 from markdownx.widgets import AdminMarkdownxWidget
@@ -21,6 +23,7 @@ from django.utils.html import format_html
 from django.contrib.admin import RelatedOnlyFieldListFilter
 from django.contrib.auth.models import Permission
 from .forms import QuestionAdminForm
+
 
 class MyModelAdmin(admin.ModelAdmin):
     formfield_overrides = {
@@ -74,6 +77,7 @@ class SolutionInline(admin.TabularInline):
 
 class QuestionAdmin(MyModelAdmin):
     inlines = [OptionInline, SolutionInline]
+
     # form = QuestionAdminForm
     # list_display = [
     #     'id', 'subject', 'chapter', 'topic', 'has_options', 'has_correct_option', 'solution_summary'
@@ -108,31 +112,36 @@ class StudyMaterialAdmin(MyModelAdmin):
     def __init__(self, model, admin_site):
         super().__init__(model, admin_site)
         self.list_filter = [
-            ("topic", RelatedOnlyFieldListFilter),
+            ("year", RelatedOnlyFieldListFilter),
+            ("exam", RelatedOnlyFieldListFilter),
+            ("subject", RelatedOnlyFieldListFilter),
         ] + self.list_filter
 
+
 class ImageAdmin(admin.ModelAdmin):
-    list_display = ('name', 'uploaded_at', 'image_preview', 'copy_url_link')
-    readonly_fields = ('image_preview', 'copy_url_link')
+    list_display = ("name", "uploaded_at", "image_preview", "copy_url_link")
+    readonly_fields = ("image_preview", "copy_url_link")
 
     def image_preview(self, obj):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-height: 200px; max-width: 200px;" />',
-                obj.image.url, obj.image.url
+                obj.image.url,
+                obj.image.url,
             )
         return "No Image"
 
-    image_preview.short_description = 'Image Preview'
+    image_preview.short_description = "Image Preview"
 
     def copy_url_link(self, obj):
         if obj.image:
-            return format_html('<a href="#" onclick="copyUrl(\'{}\')">Copy URL</a>', obj.image.url)
+            return format_html(
+                '<a href="#" onclick="copyUrl(\'{}\')">Copy URL</a>', obj.image.url
+            )
         return ""
 
-    copy_url_link.short_description = 'Copy URL'
-  
-  
+    copy_url_link.short_description = "Copy URL"
+
 
 admin.site.register(Subject, MyModelAdmin)
 admin.site.register(Chapter, ChaptersAdmin)
@@ -140,9 +149,11 @@ admin.site.register(Exam, ExamAdmin)
 admin.site.register(Topic, MyModelAdmin)
 admin.site.register(StudyMaterial, StudyMaterialAdmin)
 admin.site.register(Attempt, MyModelAdmin)
-admin.site.register(Image,ImageAdmin)
+admin.site.register(Image, ImageAdmin)
 admin.site.register(DailyQuestion, MyModelAdmin)
 admin.site.register(Year, MyModelAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(UserProfile, MyModelAdmin)
 admin.site.register(Permission)
+admin.site.register(Diamond, MyModelAdmin)
+admin.site.register(Tag, MyModelAdmin)

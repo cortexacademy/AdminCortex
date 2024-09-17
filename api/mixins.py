@@ -13,7 +13,7 @@ from rest_framework.permissions import (
 
 
 class AuthMixin:
-    authentication_classes = [CustomTokenAuthentication(), SessionAuthentication]
+    authentication_classes = [CustomTokenAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated, CustomDjangoModelPermissions]
 
 

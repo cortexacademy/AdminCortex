@@ -22,6 +22,12 @@ class SubjectSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class SubjectWithoutChaptersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = "__all__"
+
+
 # ---------------------------------------------------For question serializer----------------------
 class YearSerializer(serializers.ModelSerializer):
     class Meta:
@@ -83,12 +89,6 @@ class QuestionSerializer(serializers.ModelSerializer):
 # ---------------------------------------------------PYQ section-----------------------------
 
 
-class SubjectWithoutChaptersSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subject
-        fields = "__all__"
-
-
 class ExamSerializer(serializers.ModelSerializer):
     subjects = SubjectWithoutChaptersSerializer(many=True, read_only=True)
 
@@ -98,10 +98,23 @@ class ExamSerializer(serializers.ModelSerializer):
         # fields = ['id', 'name', 'subjects', 'created_at', 'updated_at', 'is_active']
 
 
+class ExamWithoutSubjectsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exam
+        # fields = "__all__"
+        exclude = ["subjects"]
+
+    # ------------------------------------Study Material ---------------------------
+
+
 class StudyMaterialSerializer(serializers.ModelSerializer):
+    exam = ExamWithoutSubjectsSerializer(read_only=True)
+    year = YearSerializer(read_only=True)
+    subject = SubjectWithoutChaptersSerializer(read_only=True)
+
     class Meta:
         model = StudyMaterial
-        fields = ["id", "statement", "created_at", "updated_at"]
+        fields = "__all__"
 
 
 class TopicSerializer(serializers.ModelSerializer):
@@ -111,6 +124,12 @@ class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Topic
+        fields = "__all__"
+
+
+class DiamondSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Diamond
         fields = "__all__"
 
 

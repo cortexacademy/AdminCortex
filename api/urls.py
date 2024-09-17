@@ -7,4 +7,6 @@ urlpatterns = [
     path("dailyquestion/", include("api.routes.dailyquestion")),
     path("exam/", include("api.routes.exam")),
     path("attempt/", include("api.routes.attempt")),
+    path("study-material/", include("api.routes.studymaterial")),
+    path("diamond/", include("api.routes.diamonds")),
 ]

@@ -180,12 +180,12 @@ class Year(models.Model):
 
 class StudyMaterial(models.Model):
     statement = MarkdownxField(null=False, blank=False)
-    # topic = models.ManyToManyField(Topic)
     year = models.ForeignKey(Year, null=True, on_delete=models.SET_NULL)
     subject = models.ForeignKey(Subject, null=True, on_delete=models.SET_NULL)
     exam = models.ForeignKey(Exam, null=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"studymaterial id: {self.id}"
@@ -254,7 +254,7 @@ class Attempt(models.Model):
         return f"User {self.user.email} - Q{self.question.id} - Option {self.selected_option.id}"
 
 
-class Diamonds(models.Model):
+class Diamond(models.Model):
     name = models.CharField(max_length=255, unique=True)
     statement = MarkdownxField(null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
