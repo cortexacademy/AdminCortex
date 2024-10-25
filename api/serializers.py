@@ -16,7 +16,6 @@ class ChapterSerializer(serializers.ModelSerializer):
 
 class SubjectSerializer(serializers.ModelSerializer):
     chapters = ChapterSerializer(many=True, read_only=True, source="chapter_set")
-
     class Meta:
         model = Subject
         fields = "__all__"
@@ -26,6 +25,22 @@ class SubjectWithoutChaptersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = "__all__"
+
+class ExamIDSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exam
+        fields = ["id"]
+
+
+class SubjectWithExamSerializer(serializers.ModelSerializer):
+    exams = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Subject
+        fields = ["id", "name", "exams"]
+
+    def get_exams(self, obj):
+        return ExamIDSerializer(obj.exam_set.all(), many=True).data
 
 
 # ---------------------------------------------------For question serializer----------------------
@@ -58,19 +73,31 @@ class AttemptSerializer(serializers.ModelSerializer):
         attempt = Attempt.objects.create(user=user, **validated_data)
         return attempt
 
+# ---------------------------------------------------PYQ section-----------------------------
+
+
+class ExamSerializer(serializers.ModelSerializer):
+    subjects = SubjectWithoutChaptersSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Exam
+        fields = "__all__"
+        # fields = ['id', 'name', 'subjects', 'created_at', 'updated_at', 'is_active']
+
 
 class QuestionSerializer(serializers.ModelSerializer):
     years = YearSerializer(many=True, read_only=True)
-    options = OptionSerializer(many=True, read_only=True, source="option_set")
+    subject = SubjectWithExamSerializer(many=True, read_only=True)
+    options = OptionSerializer(many=True, read_only=True)
     solution = SolutionSerializer(read_only=True)
     user_attempt = serializers.SerializerMethodField()
-
     class Meta:
         model = Question
         fields = [
             "id",
             "statement",
             "years",
+            "subject",
             "is_active",
             "created_at",
             "options",
@@ -84,18 +111,6 @@ class QuestionSerializer(serializers.ModelSerializer):
         if attempt:
             return AttemptSerializer(attempt).data
         return None
-
-
-# ---------------------------------------------------PYQ section-----------------------------
-
-
-class ExamSerializer(serializers.ModelSerializer):
-    subjects = SubjectWithoutChaptersSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Exam
-        fields = "__all__"
-        # fields = ['id', 'name', 'subjects', 'created_at', 'updated_at', 'is_active']
 
 
 class ExamWithoutSubjectsSerializer(serializers.ModelSerializer):

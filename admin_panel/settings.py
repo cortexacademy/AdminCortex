@@ -27,7 +27,17 @@ SECRET_KEY = "django-insecure-*vi)4nlsimja@=kp0vd)kklk&__6ekthn@2ah=dj3f%nr2!z5!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+                  "admin.cortexacademy.in",'192.168.29.3',
+'localhost', '127.0.0.1', '7q0xhxzq-8000.inc1.devtunnels.ms']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://admin.cortexacademy.in',
+    "http://localhost:8000",
+    "https://7q0xhxzq-8000.inc1.devtunnels.ms",
+    'http://192.168.29.3:8000'
+
+]
 
 AUTH_USER_MODEL = "api.UserProfile"
 # Application definition
@@ -64,6 +74,7 @@ MIDDLEWARE = [
 INTERNAL_IPS = [
     # ...
     "127.0.0.1",
+    "0.0.0.0",
     # ...
 ]
 
@@ -136,8 +147,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+# STATIC_URL = os.path.join(BASE_DIR,"static/")
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

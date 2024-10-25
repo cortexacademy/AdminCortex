@@ -20,9 +20,7 @@ from django.core import serializers
 
 
 class QuestionListView(AuthMixin, CustomResponseMixin, generics.ListAPIView):
-    queryset = (
-        Question.objects.all().prefetch_related("years").select_related("solution")
-    )
+    queryset = Question.objects.prefetch_related("options", "years","subject","subject__exam_set").select_related("solution")
     serializer_class = QuestionSerializer
     success_message = "Questions retrieved successfully"
 
@@ -42,7 +40,7 @@ class QuestionListView(AuthMixin, CustomResponseMixin, generics.ListAPIView):
         return context
 
     def get_queryset(self):
-        queryset = Question.objects.prefetch_related("years").select_related("solution")
+        queryset = super().get_queryset() 
         search = self.request.query_params.get("search", None)
 
         if search:
@@ -67,9 +65,8 @@ class QuestionListView(AuthMixin, CustomResponseMixin, generics.ListAPIView):
 @authentication_classes([CustomTokenAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticated])
 class QuestionDetailView(CustomResponseMixin, generics.RetrieveAPIView):
-    queryset = (
-        Question.objects.all().prefetch_related("years").select_related("solution")
-    )
+    queryset = Question.objects.prefetch_related("options", "years","subject").select_related("solution")
+
     serializer_class = QuestionSerializer
     lookup_field = "id"
     success_message = "Question retrieved successfully"
