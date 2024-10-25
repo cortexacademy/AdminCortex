@@ -9,10 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 
-
 CACHE_TTL = 60 * 60 * 24
-
-
 @method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class SubjectListView(CustomResponseMixin, generics.ListAPIView):
     queryset = Subject.objects.prefetch_related("chapter_set")
