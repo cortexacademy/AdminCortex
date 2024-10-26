@@ -9,4 +9,5 @@ urlpatterns = [
     path("attempt/", include("api.routes.attempt")),
     path("study-material/", include("api.routes.studymaterial")),
     path("diamond/", include("api.routes.diamonds")),
+    path("years/", include("api.routes.year")),
 ]
