@@ -225,6 +225,8 @@ class CreateUserView(APIView, CustomResponseMixin):
 
 
 class LoginView(views.ObtainAuthToken, CustomResponseMixin):
+    authentication_classes = []
+
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
             data=request.data, context={"request": request}

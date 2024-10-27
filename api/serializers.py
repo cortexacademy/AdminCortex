@@ -16,6 +16,7 @@ class ChapterSerializer(serializers.ModelSerializer):
 
 class SubjectSerializer(serializers.ModelSerializer):
     chapters = ChapterSerializer(many=True, read_only=True, source="chapter_set")
+
     class Meta:
         model = Subject
         fields = "__all__"
@@ -25,6 +26,7 @@ class SubjectWithoutChaptersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = "__all__"
+
 
 class ExamIDSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,7 +57,7 @@ class SubjectWithExamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subject
-        fields = ["id", "name", "exams", "chapters"]
+        fields = ["id", "name", "exams", "imageURL", "chapters"]
 
     def get_exams(self, obj):
         return ExamIDSerializer(obj.exam_set.all(), many=True).data
@@ -91,6 +93,7 @@ class AttemptSerializer(serializers.ModelSerializer):
         attempt = Attempt.objects.create(user=user, **validated_data)
         return attempt
 
+
 # ---------------------------------------------------PYQ section-----------------------------
 
 
@@ -119,6 +122,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)
     solution = SolutionSerializer(read_only=True)
     user_attempt = serializers.SerializerMethodField()
+
     class Meta:
         model = Question
         fields = [
