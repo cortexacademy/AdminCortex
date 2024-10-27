@@ -120,6 +120,7 @@ class Image(models.Model):
 class Subject(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = MarkdownxField(blank=True)
+    imageURL = models.URLField(max_length=500, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -131,6 +132,7 @@ class Subject(models.Model):
 class Exam(models.Model):
     name = models.CharField(max_length=255, unique=True)
     subjects = models.ManyToManyField(Subject)
+    imageURL = models.URLField(max_length=500, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -142,6 +144,7 @@ class Exam(models.Model):
 class Chapter(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = MarkdownxField(blank=True)
+    imageURL = models.URLField(max_length=500, blank=True, null=True)
     subjects = models.ManyToManyField(Subject)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -262,3 +265,12 @@ class Diamond(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RecentUpdate(models.Model):
+    content = MarkdownxField(null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Update {self.id}"
