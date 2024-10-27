@@ -9,6 +9,8 @@ from admin_panel.settings import EMAIL_TOKEN_VALIDITY, OTP_VALIDITY
 from .manager import UserManager
 from .utils import custom_upload_to
 from django.core.exceptions import ValidationError
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 
 class UserProfile(AbstractUser):
@@ -251,7 +253,12 @@ class Attempt(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"User {self.user.email} - Q{self.question.id} - Option {self.selected_option.id}"
+        return f"User {self.user.email} - Q{self.question.id}"
+
+
+@receiver(post_delete, sender=Attempt)
+def clear_selected_options(sender, instance, **kwargs):
+    instance.selected_option.clear()
 
 
 class Diamond(models.Model):

@@ -16,6 +16,7 @@ class ChapterSerializer(serializers.ModelSerializer):
 
 class SubjectSerializer(serializers.ModelSerializer):
     chapters = ChapterSerializer(many=True, read_only=True, source="chapter_set")
+
     class Meta:
         model = Subject
         fields = "__all__"
@@ -25,6 +26,7 @@ class SubjectWithoutChaptersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = "__all__"
+
 
 class ExamIDSerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,12 +86,18 @@ class AttemptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attempt
         fields = "__all__"
-        # fields = ['question', 'selected_option']
+
+
+# Serializer for creating a new instance with limited fields (used for POST requests)
+class AttemptCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attempt
+        fields = ["question", "user", "is_first"]
 
     def create(self, validated_data):
-        user = self.context["request"].user
-        attempt = Attempt.objects.create(user=user, **validated_data)
+        attempt = Attempt.objects.create(**validated_data)
         return attempt
+
 
 # ---------------------------------------------------PYQ section-----------------------------
 
@@ -119,6 +127,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)
     solution = SolutionSerializer(read_only=True)
     user_attempt = serializers.SerializerMethodField()
+
     class Meta:
         model = Question
         fields = [
