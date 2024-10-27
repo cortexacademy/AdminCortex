@@ -57,7 +57,7 @@ class SubjectWithExamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subject
-        fields = ["id", "name", "exams", "chapters"]
+        fields = ["id", "name", "exams", "imageURL", "chapters"]
 
     def get_exams(self, obj):
         return ExamIDSerializer(obj.exam_set.all(), many=True).data

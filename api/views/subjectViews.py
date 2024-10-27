@@ -12,11 +12,12 @@ from django.core.cache import cache
 CACHE_TTL = 60 * 60 * 24
 
 
+
 @method_decorator(cache_page(CACHE_TTL), name="dispatch")
 class SubjectListView(CustomResponseMixin, generics.ListAPIView):
     queryset = Subject.objects.prefetch_related("chapter_set")
     serializer_class = SubjectSerializer
-    success_message = "Subjects retrieved successfully"
+    success_message = "Subjects reddddddddddddtrieved successfully"
 
     filter_backends = [
         DjangoFilterBackend,
@@ -30,6 +31,7 @@ class SubjectListView(CustomResponseMixin, generics.ListAPIView):
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
+        cache.clear()
         queryset = super().get_queryset()
 
         created_at = self.request.query_params.get("created_at", None)
@@ -39,6 +41,7 @@ class SubjectListView(CustomResponseMixin, generics.ListAPIView):
         return queryset
 
     def list(self, request, *args, **kwargs):
+        cache.clear()
         response = super().list(request, *args, **kwargs)
         return self.success_response(response.data, message=self.success_message)
 
@@ -51,6 +54,7 @@ class SubjectDetailView(CustomResponseMixin, generics.RetrieveAPIView):
     success_message = "Subject retrieved successfully"
 
     def retrieve(self, request, *args, **kwargs):
+        cache.clear()
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return self.success_response(serializer.data, message=self.success_message)
@@ -77,7 +81,7 @@ class TopicsBySubjectAndYearView(CustomResponseMixin, generics.ListAPIView):
     success_message = "Topics retrieved successfully"
 
     def get_queryset(self):
-        # cache.clear()
+        cache.clear()
         subject_id = self.kwargs.get("subject_id")
         year_id = self.kwargs.get("year_id")
 
@@ -88,5 +92,6 @@ class TopicsBySubjectAndYearView(CustomResponseMixin, generics.ListAPIView):
         return topics
 
     def list(self, request, *args, **kwargs):
+        cache.clear()
         response = super().list(request, *args, **kwargs)
         return self.success_response(response.data, message=self.success_message)
