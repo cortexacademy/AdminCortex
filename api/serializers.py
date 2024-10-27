@@ -86,11 +86,16 @@ class AttemptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attempt
         fields = "__all__"
-        # fields = ['question', 'selected_option']
+
+
+# Serializer for creating a new instance with limited fields (used for POST requests)
+class AttemptCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attempt
+        fields = ["question", "user", "is_first"]
 
     def create(self, validated_data):
-        user = self.context["request"].user
-        attempt = Attempt.objects.create(user=user, **validated_data)
+        attempt = Attempt.objects.create(**validated_data)
         return attempt
 
 

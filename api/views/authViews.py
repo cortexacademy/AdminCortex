@@ -245,7 +245,7 @@ class LoginView(views.ObtainAuthToken, CustomResponseMixin):
 
 
 class ValidateLoginView(APIView, CustomResponseMixin):
-    authentication_classes = [CustomTokenAuthentication, SessionAuthentication]
+    authentication_classes = [CustomTokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request, format=None):

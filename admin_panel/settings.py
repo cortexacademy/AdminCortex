@@ -28,15 +28,14 @@ SECRET_KEY = "django-insecure-*vi)4nlsimja@=kp0vd)kklk&__6ekthn@2ah=dj3f%nr2!z5!
 DEBUG = True
 
 ALLOWED_HOSTS = [
-                  "admin.cortexacademy.in",'192.168.29.3',
-'localhost', '127.0.0.1', '7q0xhxzq-8000.inc1.devtunnels.ms']
+    "admin.cortexacademy.in",
+    "localhost",
+    "127.0.0.1",
+]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://admin.cortexacademy.in',
+    "https://admin.cortexacademy.in",
     "http://localhost:8000",
-    "https://7q0xhxzq-8000.inc1.devtunnels.ms",
-    'http://192.168.29.3:8000'
-
 ]
 
 AUTH_USER_MODEL = "api.UserProfile"
