@@ -4,8 +4,8 @@ from django.http import JsonResponse
 from admin_panel.settings import EMAIL_TOKEN_VALIDITY
 from api.common.authentication import CustomTokenAuthentication
 from api.mixins import CustomResponseMixin
-from api.models import UserEmailAuth
-from api.serializers import UserEmailAuthSerializer
+from api.models import UserDetails, UserEmailAuth
+from api.serializers import UserEmailAuthSerializer, UserProfileSerializer
 from ..utils import refresh_token, token_expire_handler, is_token_expired
 from django.core import serializers
 from ..errors import error_json
@@ -31,6 +31,7 @@ from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from rest_framework.renderers import JSONRenderer
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 
 # --------------------------------- Models ---------------------------------
 
@@ -61,6 +62,8 @@ class CheckEmailAvailable(APIView, CustomResponseMixin):
 
 
 class SendEmailOTP(APIView, CustomResponseMixin):
+
+    authentication_classes = []
 
     def post(self, request: Request, format=None):
         body = request.data
@@ -95,6 +98,8 @@ class SendEmailOTP(APIView, CustomResponseMixin):
 
 
 class VerifyEmailOTP(APIView, CustomResponseMixin):
+    authentication_classes = []
+
     def post(self, request: Request, format=None):
         body = request.data
         if str(body.get("token")) is None:
@@ -133,6 +138,7 @@ class VerifyEmailOTP(APIView, CustomResponseMixin):
 
 class CreateUserView(APIView, CustomResponseMixin):
     renderer_classes = (JSONRenderer,)
+    authentication_classes = []
 
     def post(self, request: Request, format=None):
         body = json.loads(request.body)
@@ -159,7 +165,41 @@ class CreateUserView(APIView, CustomResponseMixin):
                 message="Last Name is required in request body",
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
-
+        if body.get("city") is None:
+            return self.error_response(
+                message="City is required in request body",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        if body.get("native_state") is None:
+            return self.error_response(
+                message="Native State is required in request body",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        if body.get("college_state") is None:
+            return self.error_response(
+                message="College State is required in request body",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        if body.get("country") is None:
+            return self.error_response(
+                message="Country is required in request body",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        if body.get("pincode") is None:
+            return self.error_response(
+                message="Pincode is required in request body",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        if body.get("college_name") is None:
+            return self.error_response(
+                message="College Name is required in request body",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        if body.get("batch_year") is None:
+            return self.error_response(
+                message="Batch Year is required in request body",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
         # Verify token
         tokenObj = UserEmailAuth.objects.filter(token=body.get("token").strip()).first()
 
@@ -184,24 +224,39 @@ class CreateUserView(APIView, CustomResponseMixin):
         email = tokenObj.email
 
         try:
-            # Create user
-            new_user = User.objects.create_user(
-                email=email,
-                password=body.get("password"),
-                first_name=body.get("first_name"),
-                last_name=body.get("last_name"),
-            )
-            # Serialize new user data
-            new_user_data = json.loads(serializers.serialize("json", [new_user]))[0]
-            tokenObj.delete()
-            auth_login(request, new_user)
-            token, created = Token.objects.get_or_create(user=new_user)
-            token, is_expired = token_expire_handler(token)
-            return self.success_response(
-                message="User created successfully",
-                data={"user": new_user_data, "token": token.key},
-                status_code=status.HTTP_201_CREATED,
-            )
+            with transaction.atomic():
+                # Create user
+                new_user = User.objects.create_user(
+                    email=email,
+                    password=body.get("password"),
+                    first_name=body.get("first_name"),
+                    last_name=body.get("last_name"),
+                )
+
+                # Serialize new user data
+                tokenObj.delete()
+                auth_login(request, new_user)
+                token, created = Token.objects.get_or_create(user=new_user)
+                token, is_expired = token_expire_handler(token)
+
+                user_details = UserDetails.objects.create(
+                    user=new_user,
+                    city=body.get("city"),
+                    native_state=body.get("native_state"),
+                    college_state=body.get("college_state"),
+                    country=body.get("country"),
+                    pincode=body.get("pincode"),
+                    college_name=body.get("college_name"),
+                    batch_year=UserDetails.ProfessionalYear[body.get("batch_year")],
+                )
+                user_details.save()
+                user = UserProfileSerializer(new_user).data
+
+                return self.success_response(
+                    message="User created successfully",
+                    data={"user": user, "token": token.key},
+                    status_code=status.HTTP_201_CREATED,
+                )
 
         except IntegrityError as e:
             return self.error_response(
