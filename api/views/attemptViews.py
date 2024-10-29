@@ -3,7 +3,6 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-
 from api.mixins import AuthMixin
 from ..models import Attempt
 from ..serializers import AttemptCreateSerializer, AttemptSerializer
@@ -18,8 +17,6 @@ from rest_framework.decorators import (
     authentication_classes,
 )
 from rest_framework.permissions import IsAuthenticated
-
-from django.core import serializers
 
 
 class CreateAttemptView(AuthMixin, generics.CreateAPIView):

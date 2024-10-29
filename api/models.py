@@ -25,20 +25,57 @@ class UserProfile(AbstractUser):
         return self.email
 
 
+def validate_batch_year(value):
+    valid_choices = [choice[0] for choice in UserDetails.ProfessionalYear.choices]
+    print("HEREE", value, valid_choices)
+    if value not in valid_choices:
+        raise ValidationError(
+            ("%(value)s is not a valid choice for batch_year."),
+            params={"value": value},
+        )
+
+
 class UserDetails(models.Model):
-    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    address = models.TextField(null=True, blank=True)
+    user = models.OneToOneField(
+        UserProfile, blank=False, null=False, on_delete=models.CASCADE
+    )
+    # address = models.TextField(null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
-    state = models.CharField(max_length=255, null=True, blank=True)
+    native_state = models.CharField(max_length=255, null=True, blank=True)
+    college_state = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
     pincode = models.CharField(max_length=8, null=True, blank=True)
     college_name = models.CharField(max_length=500, null=True, blank=True)
-    batch_year = models.CharField(max_length=4, null=True, blank=True)
+    image_url = models.URLField(max_length=500, null=True, blank=True)
+
+    class ProfessionalYear(models.TextChoices):
+        FIRST_PROFF = "1st Proff"
+        SECOND_PROFF = "2nd Proff"
+        THIRD_PROFF_PART_1 = "3rd Proff - Part 1"
+        THIRD_PROFF_PART_2 = "3rd Proff - Part 2"
+        INTERN = "Intern"
+        POST_INTERN = "Post Intern"
+        OTHER = "Other"
+
+    batch_year = models.CharField(
+        max_length=20,
+        choices=ProfessionalYear.choices,
+        default=ProfessionalYear.OTHER,
+        null=True,
+        blank=True,
+        validators=[validate_batch_year],  # Add custom validator here
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    newsletter = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.email
+
+    def save(self, *args, **kwargs):
+        # Run full_clean to enforce all validators, including custom ones
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class UserEmailAuth(models.Model):

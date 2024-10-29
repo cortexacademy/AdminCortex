@@ -236,3 +236,19 @@ class UserEmailAuthSerializer(serializers.ModelSerializer):
         # Ensure the otp_expiry is timezone aware
         otp_expiry = obj.otp_created_at + timedelta(seconds=OTP_VALIDITY)
         return timezone.localtime(otp_expiry)  # Convert to local timezone
+
+
+class UserDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserDetails
+        fields = "__all__"
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    userdetails = UserDetailsSerializer(
+        read_only=True
+    )  # Nested serializer for user details
+
+    class Meta:
+        model = UserProfile
+        fields = ["email", "first_name", "last_name", "phone_number", "userdetails"]
