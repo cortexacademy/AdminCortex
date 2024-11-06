@@ -26,7 +26,6 @@ class DiamondListView(AuthMixin, CustomResponseMixin, generics.ListAPIView):
     filterset_fields = [
         "statement",  # Search within the statement content
         "name",  # Search by the exam name
-        "is_active",
     ]
     ordering_fields = ["name", "created_at"]
     search_fields = [

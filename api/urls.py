@@ -10,4 +10,5 @@ urlpatterns = [
     path("study-material/", include("api.routes.studymaterial")),
     path("diamond/", include("api.routes.diamonds")),
     path("years/", include("api.routes.year")),
+    path("upcomingplans/", include("api.routes.upcomingplans")),  # Updated line
 ]
