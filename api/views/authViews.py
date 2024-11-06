@@ -46,7 +46,6 @@ class CheckEmailAvailable(APIView, CustomResponseMixin):
 
     def post(self, request: Request, format=None):
         body = request.data
-        print(body, "hhhhhhhhhhhhh", request.data, "ansdjndjfnsd0", body.get("email"))
         if body.get("email") is None:
             return self.error_response(
                 message="Email is required in request body",
@@ -106,7 +105,6 @@ class VerifyEmailOTP(APIView, CustomResponseMixin):
 
     def post(self, request: Request, format=None):
         body = request.data
-        print(body)
         if str(body.get("token")) is None:
             return self.error_response(
                 message="Token is required in request body",
