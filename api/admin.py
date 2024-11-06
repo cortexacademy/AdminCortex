@@ -17,6 +17,7 @@ from .models import (
     UserProfile,
     Tag,
     RecentUpdate,
+    UpcomingPlan,
 )
 from markdownx.admin import MarkdownxModelAdmin
 from markdownx.widgets import AdminMarkdownxWidget
@@ -159,3 +160,4 @@ admin.site.register(Permission)
 admin.site.register(Diamond, MyModelAdmin)
 admin.site.register(Tag, MyModelAdmin)
 admin.site.register(RecentUpdate, MyModelAdmin)
+admin.site.register(UpcomingPlan, MyModelAdmin)

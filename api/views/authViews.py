@@ -41,6 +41,9 @@ User = get_user_model()
 
 
 class CheckEmailAvailable(APIView, CustomResponseMixin):
+
+    authentication_classes = []
+
     def post(self, request: Request, format=None):
         body = request.data
         if body.get("email") is None:

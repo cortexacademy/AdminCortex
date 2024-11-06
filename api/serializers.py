@@ -252,3 +252,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ["email", "first_name", "last_name", "phone_number", "userdetails"]
+
+
+class UpcomingPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UpcomingPlan
+        fields = ["id", "content", "created_at", "updated_at"]

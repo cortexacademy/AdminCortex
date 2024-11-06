@@ -95,7 +95,7 @@ class UserEmailAuth(models.Model):
         if not self.token:
             self.token = self.generate_key()
         # create a random 6 digit OTP
-        self.otp = (self.generate_key()[:6]).upper()
+        self.otp = self.generate_numeric_otp()
         return super().save(*args, **kwargs)
 
     def check_token(self):
@@ -105,7 +105,7 @@ class UserEmailAuth(models.Model):
             return True
 
     def refresh_otp(self):
-        self.otp = (self.generate_key()[:6]).upper()
+        self.otp = self.generate_numeric_otp()
         self.otp_created_at = dtime.now()
         self.save()
 
@@ -132,6 +132,11 @@ class UserEmailAuth(models.Model):
 
     def send_otp(self):
         return True
+
+    @staticmethod
+    def generate_numeric_otp():
+        # Generate a 6-digit numeric OTP
+        return f"{int.from_bytes(os.urandom(3), 'big') % 1000000:06d}"
 
     @classmethod
     def generate_key(cls):
@@ -318,3 +323,12 @@ class RecentUpdate(models.Model):
 
     def __str__(self):
         return f"Update {self.id}"
+
+
+class UpcomingPlan(models.Model):
+    content = MarkdownxField(null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Upcoming Plan {self.id}"
