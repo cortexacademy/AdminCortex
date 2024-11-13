@@ -76,6 +76,12 @@ class OptionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class OptionCorrectIncorrectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        fields = ["id", "is_correct"]
+
+
 class SolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Solution
@@ -86,6 +92,14 @@ class AttemptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attempt
         fields = "__all__"
+
+
+class AttemptSerializerWithDetailedOptions(serializers.ModelSerializer):
+    selected_option = OptionCorrectIncorrectSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Attempt
+        fields = ["id", "selected_option", "is_first"]
 
 
 # Serializer for creating a new instance with limited fields (used for POST requests)
@@ -155,6 +169,34 @@ class ExamWithoutSubjectsSerializer(serializers.ModelSerializer):
         model = Exam
         # fields = "__all__"
         exclude = ["subjects"]
+
+
+# ---------------------------------------------------Analytics Section -----------------------------
+class AnalyticsSerializer(serializers.ModelSerializer):
+    years = YearSerializer(many=True, read_only=True)
+    user_attempt = serializers.SerializerMethodField()
+    # options = OptionCorrectIncorrectSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "years",
+            "user_attempt",
+            "chapter",
+            "subject",
+        ]
+
+    def get_user_attempt(self, obj):
+        user = self.context.get("request").user
+        attempts = Attempt.objects.filter(question=obj, user=user).all()
+        serialized_attempts = []
+        for attempt in attempts:
+            serialized_attempts.append(
+                AttemptSerializerWithDetailedOptions(attempt).data
+            )
+        #     return AttemptSerializerWithDetailedOptions(attempt).data
+        return serialized_attempts
 
     # ------------------------------------Study Material ---------------------------
 

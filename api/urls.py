@@ -11,4 +11,5 @@ urlpatterns = [
     path("diamond/", include("api.routes.diamonds")),
     path("years/", include("api.routes.year")),
     path("upcomingplans/", include("api.routes.upcomingplans")),  # Updated line
+    path("analytics/", include("api.routes.analytics")),
 ]
