@@ -1,11 +1,14 @@
 import json
 from django.http import JsonResponse
 
-from admin_panel.settings import EMAIL_TOKEN_VALIDITY
+from admin_panel.settings import EMAIL_TOKEN_VALIDITY, FORGOT_PASSWORD_EMAIL_TTL
 from api.common.authentication import CustomTokenAuthentication
 from api.mixins import CustomResponseMixin
-from api.models import UserDetails, UserEmailAuth
-from api.serializers import UserEmailAuthSerializer, UserProfileSerializer
+from api.models import UserDetails, UserEmailAuth, UserForgetPassword
+from api.serializers import (
+    UserEmailAuthSerializer,
+    UserProfileSerializer,
+)
 from ..utils import refresh_token, token_expire_handler, is_token_expired
 from django.core import serializers
 from ..errors import error_json
@@ -32,6 +35,13 @@ from django.core.exceptions import ValidationError
 from rest_framework.renderers import JSONRenderer
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
+
+
+from django.shortcuts import render, redirect
+from django.views import View
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 # --------------------------------- Models ---------------------------------
 
@@ -291,7 +301,7 @@ class LoginView(views.ObtainAuthToken, CustomResponseMixin):
         )
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
-        user_data = json.loads(serializers.serialize("json", [user]))[0]
+        user_data = UserProfileSerializer(user).data
         auth_login(request, user)
         token, created = Token.objects.get_or_create(user=user)
         token, is_expired = token_expire_handler(token)
@@ -322,6 +332,32 @@ class ValidateLoginView(APIView, CustomResponseMixin):
         )
 
 
+class ResetPasswordView(APIView, CustomResponseMixin):
+    authentication_classes = [CustomTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, format=None):
+        print(request.user)
+        user_data = UserProfileSerializer(request.user).data
+        current_password = request.data.get("current_password", None)
+        print(current_password)
+        if not current_password:
+            print("heree")
+            return self.error_response("Current Password Not Provided")
+
+        check = request.user.check_password(current_password)
+        if not check:
+            return self.error_response("Currect Password is Incorrect")
+
+        password = request.data.get("password", None)
+        # user_df = User.objects.get(pk=2)
+
+        request.user.set_password(password)
+        request.user.save()
+
+        return self.success_response(data=user_data)
+
+
 @login_required(login_url="/api/auth/invalid_login/")
 def logoutUser(request):
     auth_logout(request)
@@ -330,3 +366,118 @@ def logoutUser(request):
 
 def invalidLogin(request):
     return JsonResponse({"message": "Unauthorized Request"}, status=400)
+
+
+class PasswordResetOTPEmail(APIView, CustomResponseMixin):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request: Request, format=None):
+        email = request.data.get("email", None)
+        if not email:
+            return self.error_response("Email not found in body.")
+
+        try:
+            if not User.objects.filter(email=email).exists():
+                return self.success_response(
+                    message="If an account exists with this email, an OTP has been sent.",
+                    status_code=status.HTTP_404_NOT_FOUND,
+                )
+
+            forgetPassword, created = UserForgetPassword.objects.get_or_create(
+                email=email
+            )
+
+            if not created:
+                if (
+                    forgetPassword.seconds_since_last_email()
+                    < FORGOT_PASSWORD_EMAIL_TTL
+                ):
+                    return self.error_response(
+                        "Please wait at least 15 minutes before sending another email.",
+                        status_code=status.HTTP_425_TOO_EARLY,
+                    )
+                else:
+                    forgetPassword.refresh_object()
+
+            forgetPassword.send_otp_mail()
+            return self.success_response(
+                message="If an account exists with this email, a password reset link has been sent.",
+                data={"token": forgetPassword.token, "otp": forgetPassword.otp},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        except User.DoesNotExist:
+            # For security reasons, return success even if email doesn't exist
+            return Response(
+                {
+                    "message": "If an account exists with this email, a password reset link has been sent."
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": "Failed to send password reset email"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+def verifytoken(userid, token):
+    return True
+
+
+class PasswordResetConfirmView(APIView, CustomResponseMixin):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request: Request):
+        # Check if token is valid
+        token = request.data.get("token", None)
+        otp = request.data.get("otp", None)
+        password = request.data.get("password", None)
+
+        if not password or not token or not otp:
+
+            return self.error_response(
+                message="Password or Token or OTP not present in request body."
+            )
+
+        try:
+            forgetPassword = UserForgetPassword.objects.filter(token=token).first()
+
+            if forgetPassword is not None:
+                if forgetPassword.verify_otp(otp):
+                    user = User.objects.filter(email=forgetPassword.email).first()
+                    if not user:
+                        print("No user with given email: " + forgetPassword.email)
+                        return self.error_response(
+                            "Unable to reset password with given OTP and token."
+                        )
+                    user.set_password(password)
+                    user.save()
+                    forgetPassword.refresh_object()
+                    forgetPassword.save()
+                    forgetPassword.delete()
+                    return self.success_response("password updates successfully")
+                else:
+                    print(f"Invalid OTP: {otp} vs {forgetPassword.otp}")
+                    return self.error_response(
+                        "Unable to reset password with given OTP and token"
+                    )
+
+            else:
+                print("No such token present")
+                return self.error_response(
+                    "Unable to reset password with given OTP and token"
+                )
+
+        except User.DoesNotExist as e:
+            print("ERROR: " + e)
+            return self.error_response(
+                message="Unable to reset password with given OTP and token"
+            )
+        except Exception as e:
+            print("Error: " + e)
+            return self.error_response(
+                message="Unable to reset password with given OTP and token"
+            )
