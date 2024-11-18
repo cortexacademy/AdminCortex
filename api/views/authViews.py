@@ -1,9 +1,10 @@
 import json
 from django.http import JsonResponse
+from rest_framework.generics import RetrieveAPIView
 
 from admin_panel.settings import EMAIL_TOKEN_VALIDITY, FORGOT_PASSWORD_EMAIL_TTL
 from api.common.authentication import CustomTokenAuthentication
-from api.mixins import CustomResponseMixin
+from api.mixins import AuthMixin, CustomResponseMixin
 from api.models import UserDetails, UserEmailAuth, UserForgetPassword
 from api.serializers import (
     UserEmailAuthSerializer,
@@ -38,10 +39,7 @@ from django.db import transaction
 
 
 from django.shortcuts import render, redirect
-from django.views import View
-from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.urls import reverse
 
 # --------------------------------- Models ---------------------------------
 
@@ -320,15 +318,27 @@ class ValidateLoginView(APIView, CustomResponseMixin):
         if request.auth is not None:
             token = refresh_token(request.auth)
         content = {
-            "user": json.loads(serializers.serialize("json", [request.user]))[
-                0
-            ],  # `django.contrib.auth.User` instance.
+            "user": UserProfileSerializer(request.user).data,
             "token": str(token.key),  # None
         }
         return self.success_response(
             message="User is authenticated",
             data=content,
             status_code=status.HTTP_200_OK,
+        )
+
+
+class UserDetailsView(AuthMixin, RetrieveAPIView, CustomResponseMixin):
+    serializer_class = UserProfileSerializer
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return self.request.user
+
+    def get(self, request: Request):
+        serializer = self.get_serializer(request.user)
+        return self.success_response(
+            message="User details fetched successfully", data=serializer.data
         )
 
 

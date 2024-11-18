@@ -20,10 +20,15 @@ urlpatterns = [
         "password/reset", authViews.ResetPasswordView.as_view(), name="reset_password"
     ),
     # path("password/forgot/"),
-    path("password/forgot/otp/", authViews.PasswordResetOTPEmail.as_view()),
+    path(
+        "password/forgot/otp/",
+        authViews.PasswordResetOTPEmail.as_view(),
+        name="password_forgot_otp",
+    ),
     path(
         "password/forgot/reset/",
         authViews.PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
+    path("user/", authViews.UserDetailsView.as_view(), name="user_details"),
 ]
