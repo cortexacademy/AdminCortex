@@ -30,9 +30,13 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "admin.cortexacademy.in",
     "192.168.29.3",
+    "192.168.29.3",
     "localhost",
     "127.0.0.1",
     "7q0xhxzq-8000.inc1.devtunnels.ms",
+    "192.168.1.8",
+    "192.168.248.144",
+    "192.168.1.8",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -78,15 +82,22 @@ INTERNAL_IPS = [
     # ...
     "127.0.0.1",
     "0.0.0.0",
+    "192.168.1.8",
+    "192.168.248.144",
+    "192.168.1.8",
     # ...
 ]
 
 ROOT_URLCONF = "admin_panel.urls"
 
+print(os.path.join(BASE_DIR, "api", "templates"))
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            os.path.join(BASE_DIR, "templates"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -203,7 +214,8 @@ AWS_SES_VERIFY_SSL = True
 TOKEN_EXPIRED_AFTER_SECONDS = 7 * 24 * 60 * 60  # 7 days
 EMAIL_TOKEN_VALIDITY = 60 * 60 * 24  # 24 hours
 OTP_VALIDITY = 60 * 15  # 15 minutes
-
+FORGOT_PASSWORD_TOKEN_VALIDITY = 60 * 30  # 30 minutes
+FORGOT_PASSWORD_EMAIL_TTL = 60 * 15  # can resend email link after 15 minutes.
 REST_FRAMEWORK = {
     #     # Use Django's standard `django.contrib.auth` permissions,
     #     # or allow read-only access for unauthenticated users.

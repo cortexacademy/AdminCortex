@@ -16,4 +16,19 @@ urlpatterns = [
     path("validate/", authViews.ValidateLoginView.as_view(), name="test_login"),
     path("logout/", authViews.logoutUser, name="logout"),
     path("invalid_login/", authViews.invalidLogin, name="invalid_login"),
+    path(
+        "password/reset", authViews.ResetPasswordView.as_view(), name="reset_password"
+    ),
+    # path("password/forgot/"),
+    path(
+        "password/forgot/otp/",
+        authViews.PasswordResetOTPEmail.as_view(),
+        name="password_forgot_otp",
+    ),
+    path(
+        "password/forgot/reset/",
+        authViews.PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
+    path("user/", authViews.UserDetailsView.as_view(), name="user_details"),
 ]

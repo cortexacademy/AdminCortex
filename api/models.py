@@ -1,11 +1,16 @@
 import binascii
+from math import e
 import os
 
 from django.db import models
 from markdownx.models import MarkdownxField
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone as dtime
-from admin_panel.settings import EMAIL_TOKEN_VALIDITY, OTP_VALIDITY
+from admin_panel.settings import (
+    EMAIL_TOKEN_VALIDITY,
+    FORGOT_PASSWORD_TOKEN_VALIDITY,
+    OTP_VALIDITY,
+)
 from .manager import UserManager
 from .utils import custom_upload_to
 from django.core.exceptions import ValidationError
@@ -144,6 +149,80 @@ class UserEmailAuth(models.Model):
 
     def __str__(self):
         return self.key
+
+
+class UserForgetPassword(models.Model):
+    email = models.EmailField(unique=True, db_index=True)
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    token_created_at = models.DateTimeField()
+    token = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+
+    def save(self, *args, **kwargs):
+
+        if not self.otp:
+            self.otp = self.generate_numeric_otp()
+
+        if not self.token_created_at:
+            self.token_created_at = dtime.now()
+
+        if not self.token:
+            self.token = self.generate_key()
+        # create a random 6 digit OTP
+        # self.otp = self.generate_numeric_otp()
+        return super().save(*args, **kwargs)
+
+    def refresh_otp(self):
+        self.otp = self.generate_numeric_otp()
+        # self.otp_created_at = dtime.now()
+        self.save()
+
+    def refresh_object(self):
+        self.refresh_otp()
+        self.refresh_token()
+
+    def verify_otp(self, otp):
+        try:
+            if self.otp == otp:
+                self.check_token()
+                # self.is_verified = True
+                # self.save()
+                # self.refresh_object()
+                return True
+            else:
+                return False
+        except Exception as e:
+            return False
+
+    def check_token(self):
+        if (
+            dtime.now() - self.token_created_at
+        ).seconds > FORGOT_PASSWORD_TOKEN_VALIDITY:
+            raise ValidationError("Token expired")
+        else:
+            return True
+
+    def seconds_since_last_email(self):
+        return (dtime.now() - self.token_created_at).seconds
+
+    def refresh_token(self):
+        self.token = self.generate_key()
+        self.token_created_at = dtime.now()
+        self.save()
+
+    def send_otp_mail(self):
+        return True
+
+    @staticmethod
+    def generate_numeric_otp():
+        # Generate a 6-digit numeric OTP
+        return f"{int.from_bytes(os.urandom(3), 'big') % 1000000:06d}"
+
+    @classmethod
+    def generate_key(cls):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return self.email
 
 
 class Image(models.Model):
