@@ -215,7 +215,7 @@ TOKEN_EXPIRED_AFTER_SECONDS = 7 * 24 * 60 * 60  # 7 days
 EMAIL_TOKEN_VALIDITY = 60 * 60 * 24  # 24 hours
 OTP_VALIDITY = 60 * 15  # 15 minutes
 FORGOT_PASSWORD_TOKEN_VALIDITY = 60 * 30  # 30 minutes
-FORGOT_PASSWORD_EMAIL_TTL = 60 * 15  # can resend email link after 15 minutes.
+FORGOT_PASSWORD_EMAIL_TTL = 60 * 1  # can resend email link after 15 minutes.
 REST_FRAMEWORK = {
     #     # Use Django's standard `django.contrib.auth` permissions,
     #     # or allow read-only access for unauthenticated users.

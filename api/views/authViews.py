@@ -391,7 +391,7 @@ class PasswordResetOTPEmail(APIView, CustomResponseMixin):
             if not User.objects.filter(email=email).exists():
                 return self.success_response(
                     message="If an account exists with this email, an OTP has been sent.",
-                    status_code=status.HTTP_404_NOT_FOUND,
+                    status_code=status.HTTP_200_OK,
                 )
 
             forgetPassword, created = UserForgetPassword.objects.get_or_create(
@@ -414,7 +414,7 @@ class PasswordResetOTPEmail(APIView, CustomResponseMixin):
             return self.success_response(
                 message="If an account exists with this email, a password reset link has been sent.",
                 data={"token": forgetPassword.token, "otp": forgetPassword.otp},
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_200_OK,
             )
 
         except User.DoesNotExist:
